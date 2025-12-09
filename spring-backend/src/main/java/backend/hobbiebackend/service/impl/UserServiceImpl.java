@@ -89,10 +89,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AppClient register(AppClientSignUpDto user) {
-        UserRoleEntity userRole = this.userRoleService.getUserRoleByEnumName(UserRoleEnum.USER);
-        AppClient appClient = this.modelMapper.map(user, AppClient.class);
+        UserRoleEntity userRole = userRoleService.getUserRoleByEnumName(UserRoleEnum.USER);
+
+        AppClient appClient = modelMapper.map(user, AppClient.class);
+
+        appClient.setEmail(user.getEmail());
+        appClient.setUsername(user.getUsername());
+
         appClient.setRoles(List.of(userRole));
-        appClient.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        appClient.setPassword(passwordEncoder.encode(user.getPassword()));
+
         return appClientRepository.save(appClient);
     }
 
@@ -228,3 +234,4 @@ public class UserServiceImpl implements UserService {
         return this.businessOwnerRepository.findByUsername(username).get();
     }
 }
+
