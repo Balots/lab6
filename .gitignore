@@ -1,0 +1,38 @@
+# CI/CD specific ignores
+
+# GitLab Runner cache
+.m2/
+node_modules/
+.npm/
+.trivycache/
+docker-cache/
+
+# Build artifacts
+spring-backend/target/
+react-frontend/build/
+react-frontend/coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files (should be in GitLab Variables instead)
+*.env.local
+*.env.production
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

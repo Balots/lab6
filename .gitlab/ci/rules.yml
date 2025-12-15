@@ -1,0 +1,86 @@
+# Универсальные правила для выполнения jobs
+
+# Правило: запускать только при изменении файлов backend
+.rules:backend_changes:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - spring-backend/**/*
+        - Dockerfile.backend
+        - backend.env
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+        - spring-backend/**/*
+        - Dockerfile.backend
+        - backend.env
+    - if: '$CI_COMMIT_TAG'
+    - when: manual
+      allow_failure: true
+
+# Правило: запускать только при изменении файлов frontend
+.rules:frontend_changes:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - react-frontend/**/*
+        - Dockerfile.frontend
+        - frontend.env
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+        - react-frontend/**/*
+        - Dockerfile.frontend
+        - frontend.env
+    - if: '$CI_COMMIT_TAG'
+    - when: manual
+      allow_failure: true
+
+# Правило: запускать только при изменении proxy конфигурации
+.rules:proxy_changes:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - nginx/**/*
+        - Dockerfile.proxy
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+        - nginx/**/*
+        - Dockerfile.proxy
+    - if: '$CI_COMMIT_TAG'
+    - when: manual
+      allow_failure: true
+
+# Правило: запускать только при изменении Maven зависимостей
+.rules:maven_deps_changes:
+  rules:
+    - changes:
+        - spring-backend/pom.xml
+
+# Правило: запускать только при изменении npm зависимостей
+.rules:npm_deps_changes:
+  rules:
+    - changes:
+        - react-frontend/package.json
+        - react-frontend/package-lock.json
+
+# Правило: запускать только на main/master ветке
+.rules:main_branch:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# Правило: запускать только на тегах
+.rules:on_tags:
+  rules:
+    - if: '$CI_COMMIT_TAG'
+
+# Правило: запускать на всех MR
+.rules:merge_requests:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# Правило: запускать вручную на production
+.rules:manual_production:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: manual
+    - if: '$CI_COMMIT_TAG'
+      when: manual

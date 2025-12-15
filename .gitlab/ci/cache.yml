@@ -1,0 +1,40 @@
+# Универсальные конфигурации кэширования
+
+# Кэш для Maven
+.cache:maven:
+  cache:
+    key:
+      files:
+        - spring-backend/pom.xml
+      prefix: maven-
+    paths:
+      - spring-backend/.m2/repository
+    policy: pull-push
+
+# Кэш для npm
+.cache:npm:
+  cache:
+    key:
+      files:
+        - react-frontend/package-lock.json
+      prefix: npm-
+    paths:
+      - react-frontend/node_modules
+      - react-frontend/.npm
+    policy: pull-push
+
+# Кэш Docker слоев
+.cache:docker:
+  cache:
+    key: docker-${CI_COMMIT_REF_SLUG}
+    paths:
+      - docker-cache/
+    policy: pull-push
+
+# Кэш для Trivy (сканирование безопасности)
+.cache:trivy:
+  cache:
+    key: trivy-db
+    paths:
+      - .trivycache/
+    policy: pull-push

@@ -1,17 +1,41 @@
-FROM maven:3.8.6-eclipse-temurin-11 AS builder
+# Этап 1: Кэширование Maven зависимостей
+FROM maven:3.8.6-eclipse-temurin-11 AS dependencies
 WORKDIR /app
 
-COPY spring-backend/ .
+# Копируем только pom.xml для кэширования зависимостей
+COPY spring-backend/pom.xml .
+COPY spring-backend/mvnw .
+COPY spring-backend/mvnw.cmd .
+COPY spring-backend/.mvn .mvn
 
-RUN mvn clean package -DskipTests
+# Скачиваем зависимости (этот слой будет закэширован)
+RUN mvn dependency:go-offline -B
 
-FROM eclipse-temurin:11-jre
+# Этап 2: Сборка приложения
+FROM dependencies AS builder
 WORKDIR /app
 
+# Копируем исходный код (изменения здесь не влияют на кэш зависимостей)
+COPY spring-backend/src ./src
+
+# Собираем приложение
+RUN mvn clean package -DskipTests -o
+
+# Этап 3: Финальный образ
+FROM eclipse-temurin:11-jre-alpine
+WORKDIR /app
+
+# Копируем собранный JAR из builder
 COPY --from=builder /app/target/*.jar /app/app.jar
 
-RUN adduser --system --group appuser
+# Создаем непривилегированного пользователя
+RUN addgroup -S appuser && adduser -S appuser -G appuser
 USER appuser
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]

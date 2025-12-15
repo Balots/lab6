@@ -1,0 +1,41 @@
+# Глобальные переменные для CI/CD пайплайна
+
+variables:
+  # Docker Registry конфигурация
+  CI_REGISTRY: "registry.gitlab.com"
+  CI_REGISTRY_IMAGE: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
+
+  # Docker конфигурация
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_BUILDKIT: "1"
+
+  # Имена образов (можно переопределить в GitLab UI)
+  BACKEND_IMAGE_NAME: "backend"
+  FRONTEND_IMAGE_NAME: "frontend"
+  PROXY_IMAGE_NAME: "proxy"
+
+  # Пути к Dockerfile
+  BACKEND_DOCKERFILE: "Dockerfile.backend"
+  FRONTEND_DOCKERFILE: "Dockerfile.frontend"
+  PROXY_DOCKERFILE: "Dockerfile.proxy"
+
+  # Build targets для multi-stage builds
+  BACKEND_BUILD_TARGET: ""  # Используем final stage по умолчанию
+  FRONTEND_BUILD_TARGET: "production"  # или "development"
+
+  # Maven конфигурация
+  MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/spring-backend/.m2/repository"
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+
+  # Node.js конфигурация
+  NODE_ENV: "production"
+  NPM_CONFIG_CACHE: "${CI_PROJECT_DIR}/react-frontend/.npm"
+
+  # Безопасность
+  TRIVY_SEVERITY: "CRITICAL,HIGH"
+
+  # Kubernetes/Docker Swarm namespace (для deploy)
+  DEPLOY_NAMESPACE: "default"
+
+  # Можно расширить дополнительными переменными для конкретного проекта

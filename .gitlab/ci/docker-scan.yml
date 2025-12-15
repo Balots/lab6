@@ -1,0 +1,45 @@
+# Универсальный модуль для сканирования Docker образов на уязвимости
+
+.docker_scan_template:
+  image: aquasec/trivy:latest
+  variables:
+    IMAGE_NAME: ""
+    SEVERITY_LEVELS: "CRITICAL,HIGH"
+    TRIVY_CACHE_DIR: ".trivycache/"
+  cache:
+    paths:
+      - .trivycache/
+  script:
+    - export IMAGE_TAG="${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
+    - export IMAGE_TO_SCAN="${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${IMAGE_TAG}"
+
+    - echo "Scanning image: $IMAGE_TO_SCAN"
+
+    # Сканируем образ
+    - |
+      trivy image \
+        --severity ${SEVERITY_LEVELS} \
+        --exit-code 0 \
+        --no-progress \
+        --format table \
+        ${IMAGE_TO_SCAN}
+
+    # Генерируем JSON отчет
+    - |
+      trivy image \
+        --severity ${SEVERITY_LEVELS} \
+        --exit-code 0 \
+        --no-progress \
+        --format json \
+        --output trivy-report-${IMAGE_NAME}.json \
+        ${IMAGE_TO_SCAN}
+  artifacts:
+    reports:
+      container_scanning: trivy-report-${IMAGE_NAME}.json
+    paths:
+      - trivy-report-*.json
+    expire_in: 30 days
+    when: always
+  allow_failure: true
+  tags:
+    - docker
