@@ -1,0 +1,49 @@
+stages:
+  - build
+
+variables:
+  CI_REGISTRY: "registry.gitlab.com"
+  CI_REGISTRY_IMAGE: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
+
+include:
+  - project: 'your-group/ci-modules'
+    ref: main
+    file: 'multi-docker-build.yml'
+
+build:backend:
+  extends: .build-service
+  variables:
+    SERVICE_NAME: "backend"
+    DOCKERFILE_PATH: "Dockerfile.backend"
+    WATCH_PATHS: "spring-backend/**/* pom.xml Dockerfile.backend"
+  rules:
+    - if: '$CI_COMMIT_BRANCH'
+      changes:
+        - spring-backend/**/*
+        - Dockerfile.backend
+
+build:frontend:
+  extends: .build-service
+  variables:
+    SERVICE_NAME: "frontend"
+    DOCKERFILE_PATH: "Dockerfile.frontend"
+    WATCH_PATHS: "react-frontend/**/* package.json package-lock.json Dockerfile.frontend"
+  rules:
+    - if: '$CI_COMMIT_BRANCH'
+      changes:
+        - react-frontend/**/*
+        - package.json
+        - package-lock.json
+        - Dockerfile.frontend
+
+build:proxy:
+  extends: .build-service
+  variables:
+    SERVICE_NAME: "proxy"
+    DOCKERFILE_PATH: "Dockerfile.proxy"
+    WATCH_PATHS: "nginx/**/* Dockerfile.proxy"
+  rules:
+    - if: '$CI_COMMIT_BRANCH'
+      changes:
+        - nginx/**/*
+        - Dockerfile.proxy
